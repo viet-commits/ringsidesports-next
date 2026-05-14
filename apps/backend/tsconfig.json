@@ -2,7 +2,8 @@
   "extends": "@ringsidesports/tsconfig/base.json",
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": "src",
+    "baseUrl": "."
   },
-  "include": ["src"]
+  "include": ["src", "medusa-config.ts"]
 }

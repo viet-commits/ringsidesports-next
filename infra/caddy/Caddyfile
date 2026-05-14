@@ -1,0 +1,7 @@
+api.ringsidesports.com.au {
+    reverse_proxy 127.0.0.1:9000
+}
+
+admin.ringsidesports.com.au {
+    reverse_proxy 127.0.0.1:9000
+}

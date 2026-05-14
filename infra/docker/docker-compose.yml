@@ -1,0 +1,82 @@
+# Production Docker Compose — Ringside Sports Backend
+# Deploy: docker compose up -d
+# Ports are offset to avoid conflicts with cPanel (5432, 6379, 80, 443)
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ringsidesports
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-ringsidesports}
+      POSTGRES_DB: ringsidesports
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ringsidesports"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.13
+    restart: unless-stopped
+    ports:
+      - "7700:7700"
+    environment:
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY:-ringsidesports-meili-key}
+    volumes:
+      - meilidata:/meili_data
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--spider", "http://localhost:7700/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ../../apps/backend
+      dockerfile: ../../infra/docker/Dockerfile.backend
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://ringsidesports:${DB_PASSWORD:-ringsidesports}@postgres:5432/ringsidesports
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET}
+      COOKIE_SECRET: ${COOKIE_SECRET}
+      STRIPE_API_KEY: ${STRIPE_API_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      MEDUSA_ADMIN_BACKEND_URL: https://api.ringsidesports.com.au
+      STORE_CORS: https://ringsidesports.com.au
+      ADMIN_CORS: https://admin.ringsidesports.com.au
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY:-ringsidesports-meili-key}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      meilisearch:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  redisdata:
+  meilidata:
