@@ -33,3 +33,4 @@ infra/terraform/*.tfvars
 # Medusa
 apps/backend/.medusa/
 apps/backend/uploads/
+out/
