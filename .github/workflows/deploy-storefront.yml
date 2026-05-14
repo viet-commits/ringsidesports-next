@@ -1,0 +1,16 @@
+name: Deploy Storefront
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "apps/storefront/**"
+      - "packages/shared-types/**"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "Placeholder — deploy storefront in phase 5"
