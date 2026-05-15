@@ -91,12 +91,18 @@ function cartReducer(state: CartState, action: CartAction): CartState {
   }
 }
 
+export interface ShippingEstimate {
+  label: string;
+  cost: number; // AUD cents, 0 = free, -1 = POA
+}
+
 interface CartContextValue {
   items: CartItem[];
   isOpen: boolean;
   itemCount: number;
   subtotal: number;
   gst: number;
+  shipping: ShippingEstimate;
   total: number;
   addItem: (product: Product, variant: ProductVariant, quantity?: number) => void;
   removeItem: (sku: string) => void;
@@ -150,7 +156,23 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     0
   );
   const gst = Math.round(subtotal - subtotal / 1.1);
-  const total = subtotal;
+
+  // Calculate shipping based on total cart weight
+  const totalWeight = state.items.reduce((sum, item) => {
+    const variantWeight = item.variant.weight || 0;
+    return sum + variantWeight * item.quantity;
+  }, 0);
+
+  const shipping: ShippingEstimate = (() => {
+    if (state.items.length === 0) return { label: "—", cost: 0 };
+    if (totalWeight <= 0) return { label: "Calculated at checkout", cost: 0 };
+    if (totalWeight < 5) return { label: "Standard", cost: 1000 };
+    if (totalWeight <= 20) return { label: "Heavy", cost: 2500 };
+    return { label: "Freight (POA)", cost: -1 };
+  })();
+
+  const shippingCost = shipping.cost > 0 ? shipping.cost : 0;
+  const total = subtotal + shippingCost;
   const itemCount = state.items.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
@@ -161,6 +183,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         itemCount,
         subtotal,
         gst,
+        shipping,
         total,
         addItem,
         removeItem,

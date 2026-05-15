@@ -4,6 +4,12 @@
  * POST /api/checkout
  * Body: { items: [{ name: string, price: number, quantity: number }] }
  * Returns: { url: string } — Stripe Checkout URL
+ *
+ * REQUIRED env vars (set in Cloudflare Dashboard or .cloudflare/pages.json):
+ *   STRIPE_SECRET_KEY — sk_live_... or sk_test_...
+ *   STRIPE_CHECKOUT_DOMAIN — e.g. ringsidesports.com.au
+ *
+ * If keys are missing, returns 503 with a clear message.
  */
 import Stripe from "stripe";
 
@@ -19,11 +25,33 @@ interface Env {
 }
 
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
-  const stripe = new Stripe(env.STRIPE_SECRET_KEY || "", {
+  const secretKey = env.STRIPE_SECRET_KEY || "";
+
+  if (!secretKey) {
+    return Response.json(
+      {
+        error: "Stripe is not configured",
+        message:
+          "STRIPE_SECRET_KEY environment variable is not set. " +
+          "Add it in the Cloudflare Dashboard → Workers & Pages → ringsidesports → Settings → Variables. " +
+          "Use sk_test_... for testing or sk_live_... for production.",
+        docs: "https://docs.stripe.com/keys",
+      },
+      { status: 503 }
+    );
+  }
+
+  const stripe = new Stripe(secretKey, {
     apiVersion: "2025-04-30.basil",
   });
 
-  const body = (await request.json()) as { items: CheckoutItem[] };
+  let body: { items: CheckoutItem[] };
+  try {
+    body = (await request.json()) as { items: CheckoutItem[] };
+  } catch {
+    return Response.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
   const { items } = body;
 
   if (!items || items.length === 0) {
@@ -31,6 +59,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   }
 
   const origin = new URL(request.url).origin;
+  const checkoutDomain = env.STRIPE_CHECKOUT_DOMAIN || new URL(request.url).hostname;
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
@@ -41,7 +70,10 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
           type: "fixed_amount",
           fixed_amount: { amount: 0, currency: "aud" },
           display_name: "Free Shipping",
-          delivery_estimate: { minimum: { unit: "business_day", value: 2 }, maximum: { unit: "business_day", value: 7 } },
+          delivery_estimate: {
+            minimum: { unit: "business_day", value: 2 },
+            maximum: { unit: "business_day", value: 7 },
+          },
         },
       },
     ],
@@ -52,10 +84,9 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
         unit_amount: item.price,
       },
       quantity: item.quantity,
-      tax_rates: ["txr_placeholder"], // GST 10% — create this in Stripe dashboard
     })),
-    success_url: `${origin}/cart?success=true`,
-    cancel_url: `${origin}/cart?canceled=true`,
+    success_url: `https://${checkoutDomain}/cart?success=true`,
+    cancel_url: `https://${checkoutDomain}/cart?canceled=true`,
     automatic_tax: { enabled: true },
   });
 

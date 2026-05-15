@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ShoppingBag, Minus, Plus, X, ArrowLeft } from "lucide-react";
 
 export default function CartPage() {
-  const { items, itemCount, subtotal, gst, total, removeItem, updateQuantity, clearCart } = useCart();
+  const { items, itemCount, subtotal, gst, shipping, total, removeItem, updateQuantity, clearCart } = useCart();
   const [checkingOut, setCheckingOut] = React.useState(false);
 
   const handleCheckout = React.useCallback(async () => {
@@ -166,7 +166,15 @@ export default function CartPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-secondary">Shipping</span>
-                  <span className="text-primary">Calculated at checkout</span>
+                  <span className="text-primary">
+                    {shipping.cost === -1
+                      ? `Freight (POA)`
+                      : shipping.cost > 0
+                        ? `${shipping.label} (${formatPrice(shipping.cost)})`
+                        : items.length > 0
+                          ? shipping.label
+                          : "—"}
+                  </span>
                 </div>
               </div>
 

@@ -25,7 +25,9 @@
       "NEXT_PUBLIC_MEILISEARCH_API_KEY": "ringsidesports-public-key",
       "NEXT_PUBLIC_SITE_URL": "https://ringsidesports.com.au",
       "NEXT_PUBLIC_STORE_NAME": "Ringside Sports",
-      "NEXT_PUBLIC_CURRENCY_CODE": "AUD"
+      "NEXT_PUBLIC_CURRENCY_CODE": "AUD",
+      "STRIPE_SECRET_KEY": "",
+      "STRIPE_CHECKOUT_DOMAIN": "ringsidesports.com.au"
     },
     "preview": {
       "NEXT_PUBLIC_MEDUSA_BACKEND_URL": "https://api.ringsidesports.com.au",
@@ -33,7 +35,9 @@
       "NEXT_PUBLIC_MEILISEARCH_API_KEY": "ringsidesports-public-key",
       "NEXT_PUBLIC_SITE_URL": "https://ringsidesports.pages.dev",
       "NEXT_PUBLIC_STORE_NAME": "Ringside Sports (Preview)",
-      "NEXT_PUBLIC_CURRENCY_CODE": "AUD"
+      "NEXT_PUBLIC_CURRENCY_CODE": "AUD",
+      "STRIPE_SECRET_KEY": "",
+      "STRIPE_CHECKOUT_DOMAIN": "ringsidesports.pages.dev"
     }
   },
   "domains": {

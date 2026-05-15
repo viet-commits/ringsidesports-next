@@ -18,6 +18,8 @@ export interface ProductVariant {
   stockStatus: "in_stock" | "out_of_stock";
   options: Record<string, string>;
   images: string[];
+  /** Weight in kg (0 or missing = unknown) */
+  weight: number;
 }
 
 export interface Product {
@@ -69,6 +71,7 @@ interface RawVariant {
   stockStatus: string;
   options: Record<string, string>;
   images: string[];
+  weight?: string;
 }
 
 // Category name mapping (numeric term names → readable)
@@ -90,6 +93,7 @@ const data = catalogRaw as unknown as CatalogEntry;
 /** All published products */
 export const products: Product[] = data.catalog
   .filter((p) => p.status === "published")
+  .filter((p) => p.stockStatus !== "out_of_stock")
   .map((p) => ({
     ...p,
     id: p.supplierId,
@@ -104,6 +108,7 @@ export const products: Product[] = data.catalog
       ...v,
       sku: v.supplierVariantSku,
       stockStatus: (v.stockStatus === "out_of_stock" ? "out_of_stock" : "in_stock") as "in_stock" | "out_of_stock",
+      weight: v.weight ? parseFloat(v.weight) : 0,
     })),
   }));
 

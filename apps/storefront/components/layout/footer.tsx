@@ -8,6 +8,12 @@ const INFO_LINKS = [
   { label: "Cart", href: "/cart" },
 ];
 
+const ACCOUNT_LINKS = [
+  { label: "My Account", href: "/account" },
+  { label: "Order History", href: "/orders" },
+  { label: "Contact Us", href: "/contact" },
+];
+
 export function Footer() {
   const topCategories = categories.slice(0, 6);
 
@@ -57,6 +63,23 @@ export function Footer() {
             <h4 className="text-sm font-bold text-white mb-3">Info</h4>
             <ul className="space-y-2">
               {INFO_LINKS.map((link) => (
+                <li key={link.label}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-secondary hover:text-white transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Account */}
+          <div>
+            <h4 className="text-sm font-bold text-white mb-3">Account</h4>
+            <ul className="space-y-2">
+              {ACCOUNT_LINKS.map((link) => (
                 <li key={link.label}>
                   <Link
                     href={link.href}

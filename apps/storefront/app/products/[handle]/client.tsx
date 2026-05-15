@@ -29,7 +29,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
     if (!selectedVariant || isOutOfStock) return;
     addItem(product, selectedVariant);
     setAddedFeedback(true);
-    setTimeout(() => setAddedFeedback(false), 2000);
+    setTimeout(() => { setAddedFeedback(false); window.location.href = "/cart"; }, 600);
   };
 
   // All images: product images + selected variant images
