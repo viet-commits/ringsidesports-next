@@ -27,7 +27,7 @@ function ProductListingContent() {
 
   if (activeCategory) {
     filtered = filtered.filter((p) =>
-      p.categories.some((c) => c.toLowerCase() === activeCategory.toLowerCase())
+      p.categories.some((c) => c.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") === activeCategory.toLowerCase())
     );
   }
 

@@ -98,7 +98,7 @@ export const products: Product[] = data.catalog
     stockStatus: (p.stockStatus === "out_of_stock" ? "out_of_stock" : "in_stock") as "in_stock" | "out_of_stock",
     price: p.variants[0]?.price ?? p.price ?? 0,
     stockQuantity: p.stockQuantity ?? 0,
-    description: p.description || "",
+    description: stripHtml(p.description || ""),
     categories: p.categories.map(mapCat),
     variants: p.variants.map((v) => ({
       ...v,
@@ -114,12 +114,17 @@ export interface Category {
   image: string;
 }
 
+/** Strip HTML tags from description */
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, "").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&#?[a-z0-9]+;/gi, "").trim();
+}
+
 /** All unique categories */
 export const categories: Category[] = (() => {
   const catMap = new Map<string, { name: string; slug: string; count: number; image: string }>();
   for (const p of products) {
     for (const cat of p.categories) {
-      const slug = cat.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+      const slug = cat.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
       const existing = catMap.get(slug);
       if (existing) existing.count++;
       else catMap.set(slug, { name: cat, slug, count: 1, image: p.images[0] || "/placeholder.svg" });
