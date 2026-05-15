@@ -4,12 +4,9 @@ import * as React from "react";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { products, categories } from "@/lib/products";
-import { ProductCard } from "@/components/product/product-card";
-import { ProductGrid } from "@/components/product/product-grid";
 import { SearchBar } from "@/components/search/search-bar";
 import { SlidersHorizontal, X } from "lucide-react";
-
-const ITEMS_PER_PAGE = 12;
+import { InfiniteProductGrid } from "@/components/product/infinite-grid";
 
 function ProductListingContent() {
   const searchParams = useSearchParams();
@@ -20,7 +17,6 @@ function ProductListingContent() {
   const maxPrice = searchParams.get("maxPrice") || "";
   const stockFilter = searchParams.get("stock") || "";
   const activeSort = searchParams.get("sort") || "default";
-  const page = parseInt(searchParams.get("page") || "1", 10);
 
   // Filter products
   let filtered = [...products];
@@ -61,11 +57,6 @@ function ProductListingContent() {
       break;
   }
 
-  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
-  const paginatedProducts = filtered.slice(
-    (page - 1) * ITEMS_PER_PAGE,
-    page * ITEMS_PER_PAGE
-  );
 
   const buildUrl = (params: Record<string, string>) => {
     const sp = new URLSearchParams(searchParams.toString());
@@ -263,13 +254,9 @@ function ProductListingContent() {
             </div>
           )}
 
-          {/* Product Grid */}
-          {paginatedProducts.length > 0 ? (
-            <ProductGrid>
-              {paginatedProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </ProductGrid>
+          {/* Product Grid — Infinite Scroll */}
+          {filtered.length > 0 ? (
+            <InfiniteProductGrid products={filtered} />
           ) : (
             <div className="text-center py-20">
               <p className="text-secondary text-lg">No products found</p>
@@ -281,25 +268,6 @@ function ProductListingContent() {
                   Clear filters
                 </button>
               )}
-            </div>
-          )}
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="mt-10 flex items-center justify-center gap-2">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                <a
-                  key={p}
-                  href={buildUrl({ page: p === 1 ? "" : String(p) })}
-                  className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-medium transition-colors ${
-                    page === p
-                      ? "bg-primary text-white"
-                      : "text-secondary hover:text-primary hover:bg-gray-100"
-                  }`}
-                >
-                  {p}
-                </a>
-              ))}
             </div>
           )}
         </div>

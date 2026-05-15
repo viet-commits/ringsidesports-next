@@ -40,8 +40,19 @@ export default function HomePage() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="relative bg-background overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24 lg:py-32">
+      <section className="relative min-h-[70vh] overflow-hidden">
+        {/* Video Background */}
+        <video
+          className="absolute inset-0 w-full h-full object-cover"
+          src="https://ringsidesports.com.au/wp-content/uploads/2022/12/Punch-water-bag-banner.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+        />
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-background/70" />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24 lg:py-32 flex items-center min-h-[70vh]">
           <div className="text-center max-w-3xl mx-auto">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-tight">
               Combat Sports{" "}
@@ -65,9 +76,6 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-
-        {/* Subtle gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/20 to-transparent pointer-events-none" />
       </section>
 
       {/* Featured Categories */}

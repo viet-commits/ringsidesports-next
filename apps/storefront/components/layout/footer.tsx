@@ -1,70 +1,79 @@
 import Link from "next/link";
+import { categories } from "@/lib/products";
 
-const FOOTER_LINKS = [
-  {
-    title: "Shop",
-    links: [
-      { label: "Boxing", href: "/products?category=boxing" },
-      { label: "MMA", href: "/products?category=mma" },
-      { label: "Muay Thai", href: "/products?category=muay-thai" },
-      { label: "Kickboxing", href: "/products?category=kickboxing" },
-      { label: "Apparel", href: "/products?category=apparel" },
-      { label: "All Products", href: "/products" },
-    ],
-  },
-  {
-    title: "Info",
-    links: [
-      { label: "About Us", href: "#" },
-      { label: "Shipping", href: "#" },
-      { label: "Returns", href: "#" },
-      { label: "Size Guide", href: "#" },
-      { label: "Contact", href: "#" },
-    ],
-  },
+const INFO_LINKS = [
+  { label: "About Us", href: "#" },
+  { label: "Shipping", href: "#" },
+  { label: "Returns", href: "#" },
+  { label: "Contact", href: "#" },
 ];
 
 export function Footer() {
+  const topCategories = categories.slice(0, 6);
+
   return (
     <footer className="bg-background border-t border-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
-            <span className="text-xl font-bold text-white tracking-tight">
-              RINGSIDE<span className="text-secondary">SPORTS</span>
-            </span>
+            <Link href="/" className="inline-block">
+              <img
+                src="/logo.png"
+                alt="Ringside Sports"
+                className="h-8 w-auto mb-3"
+              />
+            </Link>
             <p className="mt-3 text-sm text-secondary leading-relaxed">
               Australia&apos;s factory outlet for combat sports gear.
               Premium equipment at unbeatable prices.
             </p>
           </div>
 
-          {/* Links */}
-          {FOOTER_LINKS.map((section) => (
-            <div key={section.title}>
-              <h4 className="text-sm font-bold text-white mb-3">{section.title}</h4>
-              <ul className="space-y-2">
-                {section.links.map((link) => (
-                  <li key={link.label}>
-                    <Link
-                      href={link.href}
-                      className="text-sm text-secondary hover:text-white transition-colors"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          {/* Shop Categories */}
+          <div>
+            <h4 className="text-sm font-bold text-white mb-3">Shop</h4>
+            <ul className="space-y-2">
+              {topCategories.map((cat) => (
+                <li key={cat.slug}>
+                  <Link
+                    href={`/products?category=${cat.slug}`}
+                    className="text-sm text-secondary hover:text-white transition-colors"
+                  >
+                    {cat.name} ({cat.count})
+                  </Link>
+                </li>
+              ))}
+              <li>
+                <Link href="/products" className="text-sm text-secondary hover:text-white transition-colors">
+                  All Products
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Info */}
+          <div>
+            <h4 className="text-sm font-bold text-white mb-3">Info</h4>
+            <ul className="space-y-2">
+              {INFO_LINKS.map((link) => (
+                <li key={link.label}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-secondary hover:text-white transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
 
           {/* Contact */}
           <div>
             <h4 className="text-sm font-bold text-white mb-3">Contact</h4>
             <ul className="space-y-2 text-sm text-secondary">
               <li>Melbourne, Australia</li>
-              <li>ABN: 12 345 678 901</li>
               <li>
                 <a href="mailto:info@ringsidesports.com.au" className="hover:text-white transition-colors">
                   info@ringsidesports.com.au
@@ -81,7 +90,6 @@ export function Footer() {
             All prices in AUD and include GST.
           </p>
 
-          {/* Payment icons — placeholder text */}
           <div className="flex items-center gap-3 text-xs text-gray-600">
             <span>Visa</span>
             <span>Mastercard</span>
