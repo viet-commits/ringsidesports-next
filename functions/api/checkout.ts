@@ -2,7 +2,7 @@
  * Cloudflare Pages Function — Stripe Checkout
  *
  * POST /api/checkout
- * Body: { items: [{ name: string, price: number, quantity: number }] }
+ * Body: { items: [{ name: string, price: number, quantity: number }], discountCode?: string, discountAmount?: number }
  * Returns: { url: string } — Stripe Checkout URL
  *
  * REQUIRED env vars (set in Cloudflare Dashboard or .cloudflare/pages.json):
@@ -45,14 +45,14 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     apiVersion: "2025-04-30.basil",
   });
 
-  let body: { items: CheckoutItem[] };
+  let body: { items: CheckoutItem[]; discountCode?: string; discountAmount?: number };
   try {
-    body = (await request.json()) as { items: CheckoutItem[] };
+    body = (await request.json()) as { items: CheckoutItem[]; discountCode?: string; discountAmount?: number };
   } catch {
     return Response.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { items } = body;
+  const { items, discountCode, discountAmount } = body;
 
   if (!items || items.length === 0) {
     return Response.json({ error: "No items provided" }, { status: 400 });
@@ -60,6 +60,23 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
   const origin = new URL(request.url).origin;
   const checkoutDomain = env.STRIPE_CHECKOUT_DOMAIN || new URL(request.url).hostname;
+
+  // Build Stripe line items with optional discount coupon
+  const lineItems = items.map((item) => ({
+    price_data: {
+      currency: "aud",
+      product_data: { name: item.name },
+      unit_amount: item.price,
+    },
+    quantity: item.quantity,
+  }));
+
+  // Build session metadata for order confirmation
+  const metadata: Record<string, string> = {};
+  if (discountCode) {
+    metadata.discountCode = discountCode;
+    metadata.discountAmount = String(discountAmount || 0);
+  }
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
@@ -77,18 +94,49 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
         },
       },
     ],
-    line_items: items.map((item) => ({
-      price_data: {
-        currency: "aud",
-        product_data: { name: item.name },
-        unit_amount: item.price,
-      },
-      quantity: item.quantity,
-    })),
+    line_items: lineItems,
+    ...(discountCode && discountAmount && discountAmount > 0
+      ? {
+          discounts: [
+            {
+              coupon: await createOrGetCoupon(stripe, discountCode, discountAmount),
+            },
+          ],
+        }
+      : {}),
     success_url: `https://${checkoutDomain}/cart?success=true`,
     cancel_url: `https://${checkoutDomain}/cart?canceled=true`,
     automatic_tax: { enabled: true },
+    metadata,
   });
 
   return Response.json({ url: session.url });
 };
+
+/**
+ * Create or retrieve a one-time coupon in Stripe for the given discount.
+ * Coupons are idempotent by name — reuse if already exists.
+ */
+async function createOrGetCoupon(
+  stripe: Stripe,
+  code: string,
+  amount: number
+): Promise<string> {
+  const couponId = `discount_${code.toLowerCase()}`;
+
+  try {
+    // Try to retrieve existing
+    await stripe.coupons.retrieve(couponId);
+    return couponId;
+  } catch {
+    // Create new: Stripe coupons use same currency as checkout (AUD cents)
+    await stripe.coupons.create({
+      id: couponId,
+      amount_off: amount,
+      currency: "aud",
+      duration: "once",
+      name: code,
+    });
+    return couponId;
+  }
+}

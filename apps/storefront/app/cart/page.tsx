@@ -5,11 +5,58 @@ import Link from "next/link";
 import { useCart } from "@/lib/cart";
 import { formatPrice } from "@/lib/format";
 import { Button } from "@/components/ui/button";
-import { ShoppingBag, Minus, Plus, X, ArrowLeft } from "lucide-react";
+import { ShoppingBag, Minus, Plus, X, ArrowLeft, Tag, Ticket } from "lucide-react";
+
+const AfterpayLogo = () => (
+  <svg
+    viewBox="0 0 120 28"
+    fill="none"
+    className="h-5 inline-block align-middle mx-1"
+    aria-label="Afterpay"
+  >
+    <path
+      d="M34.8 10.4c-2.1 0-3.5 1.2-3.5 3.6s1.4 3.6 3.5 3.6c2 0 3.4-1.2 3.5-3.6 0-2.4-1.4-3.6-3.5-3.6zm0 5.9c-1 0-1.7-.8-1.7-2.3s.7-2.3 1.7-2.3c1 0 1.7.8 1.7 2.3s-.7 2.3-1.7 2.3z"
+      fill="#292929"
+    />
+    <path
+      d="M47.4 10.7h-2.1l-1.9 4.1-1.9-4.1h-2.1v6.9h1.5v-5l1.7 3.7h1.5l1.7-3.7v5h1.5v-6.9zM53.8 10.7h-3.6v6.9h3.6v-1.3h-2.1v-1.6h2v-1.3h-2v-1.5h2.1v-1.2zM57.6 15.1L59.3 10.7h1.7l-2.5 6.9h-1.5L54.5 10.7h1.7l1.4 4.4zM63.2 10.7h-1.9v6.9h1.9c2.1 0 3.3-1.2 3.3-3.5s-1.2-3.4-3.3-3.4zm0 5.7h-.5v-4.4h.5c1.2 0 1.9.8 1.9 2.2s-.7 2.2-1.9 2.2zM73.1 10.7h-1.5l-2.3 6.9h1.6l.5-1.6h2.4l.5 1.6h1.6l-2.8-6.9zm-1.4 4.3l.9-2.8.9 2.8h-1.8zM76.2 10.7h1.5v6.9h-1.5zM82.4 10.7h-2.1l-1.9 4.1-1.9-4.1h-2.1v6.9h1.5v-5l1.7 3.7h1.5l1.7-3.7v5h1.5v-6.9zM88.8 10.7h-3.6v6.9h3.6v-1.3h-2.1v-1.6h2v-1.3h-2v-1.5h2.1v-1.2zM92.6 15.1L94.3 10.7h1.7l-2.5 6.9h-1.5L89.5 10.7h1.7l1.4 4.4zM98.2 10.7h-1.9v6.9h1.9c2.1 0 3.3-1.2 3.3-3.5s-1.2-3.4-3.3-3.4zm0 5.7h-.5v-4.4h.5c1.2 0 1.9.8 1.9 2.2s-.7 2.2-1.9 2.2zM104.7 10.7v6.9h1.5v-6.9zM110.6 14c-.3-.8-.9-1.3-1.8-1.3-1.2 0-1.9.8-1.9 2.3s.7 2.3 1.9 2.3c.9 0 1.5-.5 1.8-1.3h1.5c-.4 1.5-1.6 2.5-3.3 2.5-2.1 0-3.5-1.2-3.5-3.5s1.4-3.5 3.5-3.5c1.7 0 2.9 1 3.3 2.5h-1.5zM117.3 11.5c-.3-.5-.9-.8-1.7-.8-1.1 0-1.8.8-1.8 2.3s.7 2.3 1.8 2.3c.8 0 1.4-.3 1.7-.8v.7h1.5V6.7h-1.5v4.8zm0 1.9c0 1-.5 1.7-1.2 1.7s-1.2-.7-1.2-1.7.5-1.7 1.2-1.7 1.2.7 1.2 1.7z"
+      fill="#292929"
+    />
+    <path
+      d="M10.2 7.8L7.4 4.9c-.4-.4-1-.4-1.4 0L4.6 6.3l4.2 4.3L4.5 15l1.4 1.4c.2.2.4.3.7.3s.5-.1.7-.3l2.9-2.9-2.9-2.9 2.9-2.8zM16.2 10.6L13.4 7.8 10.5 10.6l2.9 2.9 2.8-2.9z"
+      fill="#292929"
+    />
+  </svg>
+);
 
 export default function CartPage() {
-  const { items, itemCount, subtotal, gst, shipping, total, removeItem, updateQuantity, clearCart } = useCart();
+  const {
+    items,
+    itemCount,
+    subtotal,
+    gst,
+    shipping,
+    discount,
+    discountDescription,
+    total,
+    coupon,
+    couponError,
+    removeItem,
+    updateQuantity,
+    clearCart,
+    applyCoupon,
+    removeCoupon,
+  } = useCart();
   const [checkingOut, setCheckingOut] = React.useState(false);
+  const [promoInput, setPromoInput] = React.useState("");
+
+  const afterpayAmount = total / 4;
+
+  const handleApplyCoupon = () => {
+    if (promoInput.trim()) {
+      applyCoupon(promoInput.trim());
+    }
+  };
 
   const handleCheckout = React.useCallback(async () => {
     setCheckingOut(true);
@@ -19,23 +66,29 @@ export default function CartPage() {
       quantity: item.quantity,
     }));
     try {
+      const body: Record<string, unknown> = { items: lineItems };
+      if (coupon) {
+        body.discountCode = coupon.code;
+        body.discountAmount = discount;
+      }
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items: lineItems }),
+        body: JSON.stringify(body),
       });
       if (res.ok) {
         const { url } = await res.json() as { url: string };
         window.location.href = url;
       } else {
-        alert("Checkout unavailable in preview. Will be active when connected to Stripe.");
+        const errData = await res.json() as { message?: string };
+        alert(errData.message || "Checkout unavailable in preview. Will be active when connected to Stripe.");
         setCheckingOut(false);
       }
     } catch {
       alert("Checkout requires the Cloudflare Pages Function with Stripe keys configured.");
       setCheckingOut(false);
     }
-  }, [items]);
+  }, [items, coupon, discount]);
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
@@ -164,6 +217,15 @@ export default function CartPage() {
                   <span className="text-secondary">GST (10% included)</span>
                   <span className="font-medium text-primary">{formatPrice(gst)}</span>
                 </div>
+                {discount > 0 && (
+                  <div className="flex justify-between text-green-600">
+                    <span className="flex items-center gap-1">
+                      <Tag size={14} />
+                      {discountDescription}
+                    </span>
+                    <span className="font-medium">−{formatPrice(discount)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-secondary">Shipping</span>
                   <span className="text-primary">
@@ -186,14 +248,75 @@ export default function CartPage() {
                 <p className="text-xs text-secondary mt-1">All prices include GST</p>
               </div>
 
-              <Button variant="accent" size="lg" className="w-full mt-6" onClick={handleCheckout} disabled={checkingOut}>
+              {/* Promo Code */}
+              <div className="mt-4">
+                {coupon ? (
+                  <div className="flex items-center justify-between p-2 rounded-lg bg-green-50 border border-green-200">
+                    <div className="flex items-center gap-1.5 text-sm text-green-700">
+                      <Ticket size={14} />
+                      <span className="font-medium">{coupon.code}</span>
+                      <span>— {coupon.description}</span>
+                    </div>
+                    <button
+                      onClick={removeCoupon}
+                      className="p-0.5 text-green-600 hover:text-green-800"
+                      aria-label="Remove coupon"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={promoInput}
+                        onChange={(e) => setPromoInput(e.target.value)}
+                        placeholder="Promo code"
+                        className="flex-1 h-10 rounded-lg border border-gray-300 px-3 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                        onKeyDown={(e) => e.key === "Enter" && handleApplyCoupon()}
+                      />
+                      <Button
+                        variant="outline"
+                        size="md"
+                        onClick={handleApplyCoupon}
+                      >
+                        Apply
+                      </Button>
+                    </div>
+                    {couponError && (
+                      <p className="text-xs text-red-500 mt-1">{couponError}</p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <Button variant="accent" size="lg" className="w-full mt-4" onClick={handleCheckout} disabled={checkingOut}>
                 {checkingOut ? "Redirecting to Stripe..." : "Proceed to Checkout"}
               </Button>
+
+              {/* Afterpay */}
+              <div className="mt-4 p-3 rounded-lg bg-[#FFF9EC] border border-[#FFE5B4]">
+                <div className="flex items-center gap-1.5 text-sm">
+                  <span className="text-secondary">or 4 payments of</span>
+                  <span className="font-bold text-primary">{formatPrice(afterpayAmount)}</span>
+                  <span className="text-secondary">with</span>
+                  <AfterpayLogo />
+                </div>
+                <a
+                  href="https://www.afterpay.com/en-AU/terms-of-service"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-[#292929] underline mt-1 inline-block"
+                >
+                  Learn more
+                </a>
+              </div>
 
               <div className="mt-4 text-xs text-secondary space-y-1">
                 <p>✓ Secure checkout with Stripe</p>
                 <p>✓ 30-day returns</p>
-                <p>✓ Australian owned & operated</p>
+                <p>✓ Australian owned &amp; operated</p>
               </div>
             </div>
           </div>

@@ -24,10 +24,10 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: `${SITE_NAME} — Combat Sports Factory Outlet`,
+    default: "Boxing Gloves, MMA & Combat Sports Equipment Australia | Ringside Sports",
     template: `%s | ${SITE_NAME}`,
   },
-  description: SITE_DESC,
+  description: "Australia's factory outlet for boxing, MMA, Muay Thai & kickboxing gear. Premium equipment at unbeatable prices. Shop boxing gloves, MMA gloves & more.",
   metadataBase: new URL(SITE_URL),
   openGraph: {
     title: `${SITE_NAME} — Combat Sports Factory Outlet`,

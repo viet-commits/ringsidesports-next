@@ -5,12 +5,43 @@ import { ProductCard } from "@/components/product/product-card";
 import { Button } from "@/components/ui/button";
 import { Shield, Truck, Factory, Award } from "lucide-react";
 
+const SITE_URL = "https://ringsidesports.com.au";
+const OG_IMAGE = `${SITE_URL}/og-image.jpg`;
+const HOME_TITLE = "Boxing Gloves, MMA & Combat Sports Equipment Australia | Ringside Sports";
+const HOME_DESC = "Australia's factory outlet for boxing, MMA, Muay Thai & kickboxing gear. Premium equipment at unbeatable prices. Shop boxing gloves, MMA gloves, mitts & more.";
+
 export const viewport: Viewport = {
   colorScheme: "light",
 };
 
 export const metadata: Metadata = {
-  title: "Ringside Sports — Combat Sports Factory Outlet",
+  title: HOME_TITLE,
+  description: HOME_DESC,
+  alternates: {
+    canonical: SITE_URL,
+  },
+  openGraph: {
+    title: HOME_TITLE,
+    description: HOME_DESC,
+    url: SITE_URL,
+    siteName: "Ringside Sports",
+    locale: "en_AU",
+    type: "website",
+    images: [
+      {
+        url: OG_IMAGE,
+        width: 1200,
+        height: 630,
+        alt: "Ringside Sports — Combat Sports Factory Outlet",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: HOME_TITLE,
+    description: HOME_DESC,
+    images: [OG_IMAGE],
+  },
 };
 
 const TRUST_ITEMS = [
