@@ -101,7 +101,7 @@ export default function OrderHistoryPage() {
                     </td>
                     <td className="px-4 py-3 text-right">
                       <Link
-                        href={`/account/orders/${order.id}`}
+                        href={`/account/orders/detail?id=${order.id}`}
                         className="text-red-400 hover:text-red-300 text-sm flex items-center justify-end gap-1 transition-colors"
                       >
                         View <ChevronRight size={14} />

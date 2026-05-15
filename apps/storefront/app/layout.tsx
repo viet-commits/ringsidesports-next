@@ -58,8 +58,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en-AU" className={`${inter.variable} font-sans`}>
-      <body className="bg-background text-text-primary antialiased min-h-screen flex flex-col">
+    <html lang="en-AU" className={`${inter.variable}`}>
+      <head>
+        <meta name="color-scheme" content="light" />
+      </head>
+      <body className="font-sans bg-white text-primary antialiased min-h-screen flex flex-col">
         <AuthProvider>
           <CartProvider>
             <Header />

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth, OrderDetail } from "@/lib/auth";
 import { formatPrice } from "@/lib/format";
-import { ArrowLeft, Package, Truck } from "lucide-react";
+import { ArrowLeft, Package, Truck, Loader2 } from "lucide-react";
 
 const STATUS_LABELS: Record<string, string> = {
   completed: "Delivered",
@@ -26,8 +26,9 @@ const STATUS_COLORS: Record<string, string> = {
   failed: "bg-red-900/30 text-red-400 border-red-700",
 };
 
-export default function OrderDetailPage() {
-  const { id } = useParams<{ id: string }>();
+function OrderDetailContent() {
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id");
   const router = useRouter();
   const { fetchOrder } = useAuth();
   const [order, setOrder] = useState<OrderDetail | null>(null);
@@ -35,6 +36,11 @@ export default function OrderDetailPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    if (!id) {
+      setError("No order specified.");
+      setLoading(false);
+      return;
+    }
     fetchOrder(Number(id)).then((data) => {
       if (data) {
         setOrder(data);
@@ -48,8 +54,8 @@ export default function OrderDetailPage() {
   if (loading) {
     return (
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-8 text-center">
-        <Package size={32} className="text-gray-600 mx-auto mb-3 animate-pulse" />
-        <p className="text-gray-500 text-sm">Loading order...</p>
+        <Loader2 size={32} className="text-gray-400 mx-auto mb-3 animate-spin" />
+        <p className="text-gray-400 text-sm">Loading order...</p>
       </div>
     );
   }
@@ -70,7 +76,6 @@ export default function OrderDetailPage() {
   }
 
   const shippingAddr = order.addresses?.find((a) => a.type === "shipping");
-  const billingAddr = order.addresses?.find((a) => a.type === "billing");
 
   return (
     <div>
@@ -97,19 +102,17 @@ export default function OrderDetailPage() {
         })}
       </p>
 
-      {/* Tracking */}
       {order.tracking_number && (
         <div className="bg-blue-900/20 border border-blue-800 rounded-xl p-4 mb-6 flex items-center gap-3">
           <Truck size={20} className="text-blue-400 shrink-0" />
           <div>
             <p className="text-blue-300 text-sm font-medium">Tracking</p>
-            <p className="text-blue-400 text-sm">{order.tracking_number}</p>
+            <p className="text-blue-400 text-sm font-mono">{order.tracking_number}</p>
           </div>
         </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        {/* Items */}
         <div className="lg:col-span-2">
           <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
             <div className="px-4 py-3 border-b border-gray-800">
@@ -141,7 +144,6 @@ export default function OrderDetailPage() {
           </div>
         </div>
 
-        {/* Summary */}
         <div>
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 space-y-2">
             <h2 className="text-sm font-semibold text-white mb-3">Order Summary</h2>
@@ -171,31 +173,32 @@ export default function OrderDetailPage() {
         </div>
       </div>
 
-      {/* Addresses */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {shippingAddr && (
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-            <h3 className="text-sm font-semibold text-white mb-2">Shipping Address</h3>
-            <div className="text-sm text-gray-400 space-y-0.5">
-              <p>{shippingAddr.line1}</p>
-              {shippingAddr.line2 && <p>{shippingAddr.line2}</p>}
-              <p>{shippingAddr.city} {shippingAddr.state} {shippingAddr.postcode}</p>
-              <p>{shippingAddr.country}</p>
-            </div>
+      {shippingAddr && (
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 max-w-sm">
+          <h3 className="text-sm font-semibold text-white mb-2">Shipping Address</h3>
+          <div className="text-sm text-gray-400 space-y-0.5">
+            <p>{shippingAddr.line1}</p>
+            {shippingAddr.line2 && <p>{shippingAddr.line2}</p>}
+            <p>{shippingAddr.city} {shippingAddr.state} {shippingAddr.postcode}</p>
+            <p>{shippingAddr.country}</p>
           </div>
-        )}
-        {billingAddr && (
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-            <h3 className="text-sm font-semibold text-white mb-2">Billing Address</h3>
-            <div className="text-sm text-gray-400 space-y-0.5">
-              <p>{billingAddr.line1}</p>
-              {billingAddr.line2 && <p>{billingAddr.line2}</p>}
-              <p>{billingAddr.city} {billingAddr.state} {billingAddr.postcode}</p>
-              <p>{billingAddr.country}</p>
-            </div>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
+  );
+}
+
+export default function OrderDetailPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-8 text-center">
+          <Loader2 size={32} className="text-gray-400 mx-auto mb-3 animate-spin" />
+          <p className="text-gray-400 text-sm">Loading...</p>
+        </div>
+      }
+    >
+      <OrderDetailContent />
+    </Suspense>
   );
 }
