@@ -4,19 +4,13 @@ import * as React from "react";
 import Link from "next/link";
 import { Search, ShoppingCart, Menu, X } from "lucide-react";
 import { useCart } from "@/lib/cart";
-
-const NAV_LINKS = [
-  { label: "Boxing", href: "/products?category=boxing" },
-  { label: "MMA", href: "/products?category=mma" },
-  { label: "Muay Thai", href: "/products?category=muay-thai" },
-  { label: "Kickboxing", href: "/products?category=kickboxing" },
-  { label: "Apparel", href: "/products?category=apparel" },
-  { label: "Accessories", href: "/products?category=accessories" },
-];
+import { categories } from "@/lib/products";
 
 export function Header() {
   const { itemCount, toggleCart } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+
+  const topCats = categories.slice(0, 6);
 
   return (
     <header className="sticky top-0 z-50 bg-background border-b border-gray-800">
@@ -42,20 +36,19 @@ export function Header() {
 
           {/* Desktop Nav */}
           <nav className="hidden lg:flex items-center gap-1">
-            {NAV_LINKS.map((link) => (
+            {topCats.map((cat) => (
               <Link
-                key={link.href}
-                href={link.href}
+                key={cat.slug}
+                href={`/products?category=${cat.slug}`}
                 className="px-3 py-2 text-sm font-medium text-gray-300 hover:text-white rounded-lg hover:bg-primary-light transition-colors"
               >
-                {link.label}
+                {cat.name}
               </Link>
             ))}
           </nav>
 
           {/* Right actions */}
           <div className="flex items-center gap-2">
-            {/* Search */}
             <Link
               href="/search"
               className="p-2 text-gray-300 hover:text-white transition-colors rounded-lg hover:bg-primary-light"
@@ -64,45 +57,44 @@ export function Header() {
               <Search size={20} />
             </Link>
 
-            {/* Cart */}
             <button
               onClick={toggleCart}
-              className="relative p-2 text-gray-300 hover:text-white transition-colors rounded-lg hover:bg-primary-light"
+              className="p-2 text-gray-300 hover:text-white transition-colors rounded-lg hover:bg-primary-light relative"
               aria-label="Cart"
             >
               <ShoppingCart size={20} />
               {itemCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 bg-accent text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                  {itemCount > 9 ? "9+" : itemCount}
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-accent text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                  {itemCount}
                 </span>
               )}
             </button>
           </div>
         </div>
 
-        {/* Mobile Nav */}
+        {/* Mobile menu */}
         {mobileMenuOpen && (
-          <nav className="lg:hidden pb-4 border-t border-gray-800 pt-4">
-            <div className="flex flex-col gap-1">
-              {NAV_LINKS.map((link) => (
+          <div className="lg:hidden border-t border-gray-800 py-4">
+            <nav className="flex flex-col gap-1">
+              {topCats.map((cat) => (
                 <Link
-                  key={link.href}
-                  href={link.href}
-                  className="px-4 py-2.5 text-base font-medium text-gray-300 hover:text-white hover:bg-primary-light rounded-lg transition-colors"
+                  key={cat.slug}
+                  href={`/products?category=${cat.slug}`}
+                  className="px-3 py-2 text-sm font-medium text-gray-300 hover:text-white rounded-lg hover:bg-primary-light transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  {link.label}
+                  {cat.name}
                 </Link>
               ))}
               <Link
                 href="/products"
-                className="px-4 py-2.5 text-base font-bold text-white hover:bg-primary-light rounded-lg transition-colors"
+                className="px-3 py-2 text-sm font-medium text-accent hover:text-white transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Shop All →
+                All Products
               </Link>
-            </div>
-          </nav>
+            </nav>
+          </div>
         )}
       </div>
     </header>

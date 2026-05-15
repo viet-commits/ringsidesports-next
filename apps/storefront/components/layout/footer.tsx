@@ -2,10 +2,10 @@ import Link from "next/link";
 import { categories } from "@/lib/products";
 
 const INFO_LINKS = [
-  { label: "About Us", href: "#" },
-  { label: "Shipping", href: "#" },
-  { label: "Returns", href: "#" },
-  { label: "Contact", href: "#" },
+  { label: "About Us", href: "/products" },
+  { label: "All Products", href: "/products" },
+  { label: "Search", href: "/search" },
+  { label: "Cart", href: "/cart" },
 ];
 
 export function Footer() {

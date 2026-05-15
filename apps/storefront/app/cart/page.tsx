@@ -9,6 +9,33 @@ import { ShoppingBag, Minus, Plus, X, ArrowLeft } from "lucide-react";
 
 export default function CartPage() {
   const { items, itemCount, subtotal, gst, total, removeItem, updateQuantity, clearCart } = useCart();
+  const [checkingOut, setCheckingOut] = React.useState(false);
+
+  const handleCheckout = React.useCallback(async () => {
+    setCheckingOut(true);
+    const lineItems = items.map((item) => ({
+      name: item.variant.title,
+      price: item.variant.price,
+      quantity: item.quantity,
+    }));
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items: lineItems }),
+      });
+      if (res.ok) {
+        const { url } = await res.json() as { url: string };
+        window.location.href = url;
+      } else {
+        alert("Checkout unavailable in preview. Will be active when connected to Stripe.");
+        setCheckingOut(false);
+      }
+    } catch {
+      alert("Checkout requires the Cloudflare Pages Function with Stripe keys configured.");
+      setCheckingOut(false);
+    }
+  }, [items]);
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
@@ -151,8 +178,8 @@ export default function CartPage() {
                 <p className="text-xs text-secondary mt-1">All prices include GST</p>
               </div>
 
-              <Button variant="accent" size="lg" className="w-full mt-6">
-                Proceed to Checkout
+              <Button variant="accent" size="lg" className="w-full mt-6" onClick={handleCheckout} disabled={checkingOut}>
+                {checkingOut ? "Redirecting to Stripe..." : "Proceed to Checkout"}
               </Button>
 
               <div className="mt-4 text-xs text-secondary space-y-1">

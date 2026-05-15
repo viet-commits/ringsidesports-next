@@ -68,9 +68,9 @@ export default function HomePage() {
                   Shop All Products
                 </Button>
               </Link>
-              <Link href="/products?category=boxing">
-                <Button variant="outline" size="lg" className="w-full sm:w-auto border-gray-600 text-gray-300 hover:text-white hover:border-white">
-                  Boxing Gear
+              <Link href="/products">
+                <Button variant="outline" size="lg" className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-black">
+                  View All Gear
                 </Button>
               </Link>
             </div>
