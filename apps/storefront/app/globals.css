@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #000000;
+  --color-primary-light: #333333;
+  --color-secondary: #848484;
+  --color-background: #0A0A0A;
+  --color-surface: #FFFFFF;
+  --color-accent: #e53e3e;
+}
+
+/* Inter font — loaded from next/font in layout */
+body {
+  color-scheme: light;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

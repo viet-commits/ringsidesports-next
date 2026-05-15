@@ -2,6 +2,9 @@
   "extends": "@ringsidesports/tsconfig/nextjs.json",
   "compilerOptions": {
     "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    },
     "plugins": [
       {
         "name": "next"
