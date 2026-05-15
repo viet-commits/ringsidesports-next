@@ -3,10 +3,10 @@ import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice } from "@/lib/format";
-import type { MockProduct } from "@/lib/products";
+import type { Product } from "@/lib/products";
 
 interface ProductCardProps {
-  product: MockProduct;
+  product: Product;
   className?: string;
 }
 

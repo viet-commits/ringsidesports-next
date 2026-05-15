@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
-import { PRODUCTS, CATEGORIES } from "@/lib/products";
+import { products, categories } from "@/lib/products";
 import { ProductCard } from "@/components/product/product-card";
 import { ProductGrid } from "@/components/product/product-grid";
 import { SearchBar } from "@/components/search/search-bar";
@@ -23,7 +23,7 @@ function ProductListingContent() {
   const page = parseInt(searchParams.get("page") || "1", 10);
 
   // Filter products
-  let filtered = [...PRODUCTS];
+  let filtered = [...products];
 
   if (activeCategory) {
     filtered = filtered.filter((p) =>
@@ -98,7 +98,7 @@ function ProductListingContent() {
               All Products
             </a>
           </li>
-          {CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <li key={cat.slug}>
               <a
                 href={`/products?category=${cat.slug}`}
@@ -188,7 +188,7 @@ function ProductListingContent() {
       <div className="mb-8">
         <h1 className="text-3xl sm:text-4xl font-bold text-primary">
           {activeCategory
-            ? CATEGORIES.find((c) => c.slug === activeCategory)?.name || "Products"
+            ? categories.find((c) => c.slug === activeCategory)?.name || "Products"
             : "All Products"}
         </h1>
         <p className="mt-2 text-secondary">
@@ -246,7 +246,7 @@ function ProductListingContent() {
             <div className="flex flex-wrap gap-2 mb-6">
               {activeCategory && (
                 <span className="inline-flex items-center gap-1 text-xs font-medium bg-primary text-white rounded-full px-3 py-1">
-                  {CATEGORIES.find((c) => c.slug === activeCategory)?.name}
+                  {categories.find((c) => c.slug === activeCategory)?.name}
                   <button onClick={clearFilters}>
                     <X size={12} />
                   </button>

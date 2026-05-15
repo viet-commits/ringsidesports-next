@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
-import { FEATURED_PRODUCTS, CATEGORIES } from "@/lib/products";
+import { featuredProducts, categories } from "@/lib/products";
 import { ProductCard } from "@/components/product/product-card";
 import { Button } from "@/components/ui/button";
 import { Shield, Truck, Factory, Award } from "lucide-react";
@@ -82,7 +82,7 @@ export default function HomePage() {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-          {CATEGORIES.map((category) => (
+          {categories.map((category) => (
             <Link
               key={category.slug}
               href={`/products?category=${category.slug}`}
@@ -128,7 +128,7 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-            {FEATURED_PRODUCTS.map((product) => (
+            {featuredProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>

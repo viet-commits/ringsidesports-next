@@ -2,12 +2,12 @@
 
 import * as React from "react";
 import { Badge } from "@/components/ui/badge";
-import type { MockVariant } from "@/lib/products";
+import type { ProductVariant } from "@/lib/products";
 
 interface VariantSelectorProps {
-  variants: MockVariant[];
+  variants: ProductVariant[];
   selectedSku: string;
-  onSelect: (variant: MockVariant) => void;
+  onSelect: (variant: ProductVariant) => void;
 }
 
 export function VariantSelector({ variants, selectedSku, onSelect }: VariantSelectorProps) {

@@ -1,11 +1,11 @@
 "use client";
 
 import React, { createContext, useContext, useReducer, useCallback, useEffect } from "react";
-import type { MockProduct, MockVariant } from "./products";
+import type { Product, ProductVariant } from "./products";
 
 export interface CartItem {
-  product: MockProduct;
-  variant: MockVariant;
+  product: Product;
+  variant: ProductVariant;
   quantity: number;
 }
 
@@ -15,7 +15,7 @@ interface CartState {
 }
 
 type CartAction =
-  | { type: "ADD_ITEM"; product: MockProduct; variant: MockVariant; quantity?: number }
+  | { type: "ADD_ITEM"; product: Product; variant: ProductVariant; quantity?: number }
   | { type: "REMOVE_ITEM"; sku: string }
   | { type: "UPDATE_QUANTITY"; sku: string; quantity: number }
   | { type: "CLEAR_CART" }
@@ -98,7 +98,7 @@ interface CartContextValue {
   subtotal: number;
   gst: number;
   total: number;
-  addItem: (product: MockProduct, variant: MockVariant, quantity?: number) => void;
+  addItem: (product: Product, variant: ProductVariant, quantity?: number) => void;
   removeItem: (sku: string) => void;
   updateQuantity: (sku: string, quantity: number) => void;
   clearCart: () => void;
@@ -129,7 +129,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [state.items]);
 
   const addItem = useCallback(
-    (product: MockProduct, variant: MockVariant, quantity = 1) => {
+    (product: Product, variant: ProductVariant, quantity = 1) => {
       dispatch({ type: "ADD_ITEM", product, variant, quantity });
     },
     []

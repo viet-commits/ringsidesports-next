@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
-import { PRODUCTS, CATEGORIES, type MockProduct } from "@/lib/products";
+import { products, categories, type Product } from "@/lib/products";
 import { ProductCard } from "@/components/product/product-card";
 import { ProductGrid } from "@/components/product/product-grid";
 import { SearchBar } from "@/components/search/search-bar";
@@ -20,10 +20,10 @@ function SearchContent() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = React.useState(false);
 
   // Filter by search query
-  let results: MockProduct[] = [];
+  let results: Product[] = [];
   if (query) {
     const q = query.toLowerCase();
-    results = PRODUCTS.filter(
+    results = products.filter(
       (p) =>
         p.title.toLowerCase().includes(q) ||
         p.description.toLowerCase().includes(q) ||
@@ -84,7 +84,7 @@ function SearchContent() {
               All Categories
             </a>
           </li>
-          {CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <li key={cat.slug}>
               <a
                 href={buildSearchUrl({ category: cat.slug })}
@@ -193,7 +193,7 @@ function SearchContent() {
             <div className="flex flex-wrap gap-2 mb-6">
               {activeCategory && (
                 <span className="inline-flex items-center gap-1 text-xs font-medium bg-primary text-white rounded-full px-3 py-1">
-                  {CATEGORIES.find((c) => c.slug === activeCategory)?.name}
+                  {categories.find((c) => c.slug === activeCategory)?.name}
                   <button onClick={clearFilters}>
                     <X size={12} />
                   </button>

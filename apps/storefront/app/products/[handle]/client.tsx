@@ -8,10 +8,10 @@ import { formatPrice, formatGst } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { VariantSelector } from "@/components/product/variant-selector";
-import type { MockProduct } from "@/lib/products";
+import type { Product } from "@/lib/products";
 
 interface ProductDetailClientProps {
-  product: MockProduct;
+  product: Product;
 }
 
 export function ProductDetailClient({ product }: ProductDetailClientProps) {
