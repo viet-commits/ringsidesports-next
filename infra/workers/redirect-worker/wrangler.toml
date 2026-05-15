@@ -1,0 +1,31 @@
+# Cloudflare Redirect Worker
+name = "ringsidesports-redirect"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Routes (update to match your domain)
+# The worker intercepts requests and redirects before they hit Pages
+# Default route. Set to your production domain.
+route = { pattern = "ringsidesports.com.au/*", zone_name = "ringsidesports.com.au" }
+
+# Uncomment for staging:
+# route = { pattern = "staging.ringsidesports.com.au/*", zone_name = "ringsidesports.com.au" }
+
+[observability]
+enabled = true
+
+[[kv_namespaces]]
+binding = "REDIRECTS"
+id = "PLACEHOLDER_KV_NAMESPACE_ID"
+preview_id = "PLACEHOLDER_KV_NAMESPACE_ID"
+
+# Assets binding for pass-through to Cloudflare Pages
+# Uncomment once Pages project is set up:
+# [assets]
+# binding = "ASSETS"
+# directory = "../../apps/storefront/out"
+
+[vars]
+# Environment variables go here
+# (none needed currently)
