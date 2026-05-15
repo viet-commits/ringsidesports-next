@@ -15,7 +15,8 @@
   "dependencies": {
     "next": "15.1.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "meilisearch": "^0.47.0"
   },
   "devDependencies": {
     "@cloudflare/next-on-pages": "^1.13.0",
