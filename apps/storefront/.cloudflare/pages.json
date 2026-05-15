@@ -1,0 +1,50 @@
+{
+  "project": {
+    "name": "ringsidesports",
+    "id": "8af93a4f-0866-4ece-88c9-6028d63cc848",
+    "subdomain": "ringsidesports.pages.dev",
+    "production_branch": "main",
+    "account_id": "13072282b181d7c44e8d7743c23a2c8c",
+    "zone_id": "8373cfb00647c6c2fcd6779b8242c7c6"
+  },
+  "build": {
+    "command": "pnpm --filter storefront build",
+    "output_dir": "apps/storefront/out",
+    "root_dir": "/"
+  },
+  "deployment": {
+    "method": "cli",
+    "command": "npx wrangler pages deploy apps/storefront/out --project-name=ringsidesports --branch=main",
+    "preview_url_pattern": "https://{commit_hash}.ringsidesports.pages.dev",
+    "production_url": "https://ringsidesports.pages.dev"
+  },
+  "environment": {
+    "production": {
+      "NEXT_PUBLIC_MEDUSA_BACKEND_URL": "https://api.ringsidesports.com.au",
+      "NEXT_PUBLIC_MEILISEARCH_HOST": "https://search.ringsidesports.com.au",
+      "NEXT_PUBLIC_MEILISEARCH_API_KEY": "ringsidesports-public-key",
+      "NEXT_PUBLIC_SITE_URL": "https://ringsidesports.com.au",
+      "NEXT_PUBLIC_STORE_NAME": "Ringside Sports",
+      "NEXT_PUBLIC_CURRENCY_CODE": "AUD"
+    },
+    "preview": {
+      "NEXT_PUBLIC_MEDUSA_BACKEND_URL": "https://api.ringsidesports.com.au",
+      "NEXT_PUBLIC_MEILISEARCH_HOST": "https://search.ringsidesports.com.au",
+      "NEXT_PUBLIC_MEILISEARCH_API_KEY": "ringsidesports-public-key",
+      "NEXT_PUBLIC_SITE_URL": "https://ringsidesports.pages.dev",
+      "NEXT_PUBLIC_STORE_NAME": "Ringside Sports (Preview)",
+      "NEXT_PUBLIC_CURRENCY_CODE": "AUD"
+    }
+  },
+  "domains": {
+    "custom": ["ringsidesports.com.au"],
+    "pending_dns": "In Cloudflare DNS, add CNAME: ringsidesports.com.au → ringsidesports.pages.dev (proxied)"
+  },
+  "redirect_worker": {
+    "name": "ringsidesports-redirect",
+    "kv_namespace": "REDIRECTS",
+    "kv_namespace_id": "PLACEHOLDER_KV_NAMESPACE_ID",
+    "route": "ringsidesports.com.au/*",
+    "note": "KV namespace requires Workers KV:Edit permission on API token"
+  }
+}

@@ -1,8 +1,45 @@
 # Cutover Runbook
 
-**Target completion:** Phase 8 (Go-Live Preparation)
+**Target completion:** Phase 9 (Cutover)
+**Last updated:** 2026-05-15
 **Estimated duration:** 45 minutes
 **Rollback window:** Immediate — see `rollback.md`
+
+---
+
+## Phase 9 Discoveries (2026-05-15)
+
+### Cloudflare Pages Project
+- **Project created:** `ringsidesports` (ID: `8af93a4f-0866-4ece-88c9-6028d63cc848`)
+- **Subdomain:** `ringsidesports.pages.dev`
+- **Build config:** `pnpm --filter storefront build` → `apps/storefront/out`
+- **Deploy tested:** ✅ Static export (62 files) deployed successfully via `wrangler pages deploy`
+- **Config reference:** `apps/storefront/.cloudflare/pages.json`
+
+### API Token Permissions Required
+
+The current token has limited permissions. For full deployment, the token needs:
+- ✅ **Pages:Edit** — Already working (Pages project created and deployed)
+- ❌ **Workers Scripts:Edit** — Needed for redirect worker deploy (`wrangler deploy`)
+- ❌ **Workers KV Storage:Edit** — Needed for KV namespace creation + bulk upload
+
+**Action:** Go to https://dash.cloudflare.com/profile/api-tokens → Edit token → add missing permissions.
+
+### Redirect Worker Status
+- **Worker code:** `infra/workers/redirect-worker/src/index.ts` — ready
+- **KV namespace:** REDIRECTS — needs creation via API or Dashboard
+- **Worker deploy:** Blocked by token permissions
+- **Manual fallback:** Create KV namespace + deploy worker via Cloudflare Dashboard
+
+### Storefront Deploy
+- **Script:** `scripts/deploy-storefront.sh` — automates `wrangler pages deploy`
+- **Latest deploy:** `https://9800148d.ringsidesports.pages.dev` (preview)
+
+### Health Check Script
+- **Script:** `scripts/cutover-check.sh` — 8-section pre-flight check, outputs go/no-go
+
+### Maintenance Mode
+- **Script:** `scripts/maintenance-mode.sh` — toggle WP maintenance mode (WP-CLI or .maintenance file)
 
 ---
 
@@ -17,9 +54,15 @@ All items must be ✅ before starting cutover:
 - [ ] **Customer accounts migrated** — `scripts/migrate-customers.mjs` exported 1,496 customers; import scripts ready
 - [ ] **Orders migrated** — `scripts/migrate-orders.mjs` exported 331 orders; verification passed
 - [ ] **DNS TTL lowered to 60s** — Set TTL=60 on `ringsidesports.com.au`, `api.ringsidesports.com.au`, `admin.ringsidesports.com.au` at least 24h before cutover
+- [ ] **Cloudflare Pages project created** — `ringsidesports` project (ID: `8af93a4f`) with subdomain `ringsidesports.pages.dev`. Build: `pnpm --filter storefront build`. Output: `apps/storefront/out`.
+- [ ] **Storefront deployed to Pages** — Production deployment at `ringsidesports.pages.dev` is serving 200
 - [ ] **SSL certs provisioned** — Let's Encrypt certs active on `api.ringsidesports.com.au` and `admin.ringsidesports.com.au` via Caddy (see `docs/ssl-setup.md`)
+- [ ] **API token permissions expanded** — Workers Scripts:Edit + Workers KV Storage:Edit permissions added to token
+- [ ] **KV namespace created** — REDIRECTS namespace provisioned, ID updated in `infra/workers/redirect-worker/wrangler.toml`
+- [ ] **Redirect worker deployed** — `ringsidesports-redirect` worker running with redirect map loaded into KV
 - [ ] **Backups verified** — PostgreSQL dump + R2 bucket sync confirmed restorable within last 24h
 - [ ] **Rollback plan rehearsed** — At least one dry-run of `docs/runbooks/rollback.md` steps completed
+- [ ] **Pre-flight check passed** — `./scripts/cutover-check.sh` returns ALL CLEAR (0 failures)
 
 ---
 
@@ -110,44 +153,82 @@ echo "Sitemap: $(head -5 /tmp/sitemap.xml)"
 
 ### Step 5: Deploy Redirect Worker to Cloudflare
 
+**Before starting:** Ensure API token has `Workers Scripts:Edit` and `Workers KV Storage:Edit` permissions.
+
 ```bash
-cd /tmp/ringsidesports-next/infra/workers/redirect-worker
+# Set credentials
+export CLOUDFLARE_API_TOKEN="your-token"
+export CLOUDFLARE_ACCOUNT_ID="13072282b181d7c44e8d7743c23a2c8c"
+
+cd /tmp/ringsidesports-next
+
+# Option A: CLI deploy (if token has full permissions)
+cd infra/workers/redirect-worker
+
+# First, update wrangler.toml with real KV namespace ID
+# Get the ID: npx wrangler kv:namespace list
+# Edit wrangler.toml: replace PLACEHOLDER_KV_NAMESPACE_ID
+
+# Create KV namespace (if not exists)
+npx wrangler kv:namespace create REDIRECTS
 
 # Bulk upload redirect map to KV
-wrangler kv:bulk put REDIRECTS \
-  --binding=REDIRECTS \
-  --path=<(node -e "
-    const data = require('/tmp/redirect-map.json');
-    data.forEach(r => console.log(JSON.stringify({key: r.source, value: JSON.stringify(r)})));
-  ")
+node -e "
+  const fs = require('fs');
+  const data = JSON.parse(fs.readFileSync('/tmp/redirect-map.json'));
+  data.forEach(r => console.log(JSON.stringify({key: r.source, value: JSON.stringify(r)})));
+" > /tmp/kv-bulk.ndjson
+
+npx wrangler kv:bulk put REDIRECTS --binding=REDIRECTS /tmp/kv-bulk.ndjson
 
 # Deploy the worker
-wrangler deploy
+npx wrangler deploy
 
 # Test a known redirect
 curl -sI "https://ringsidesports.com.au/product/some-legacy-product/" | grep "Location\|301"
 ```
+
+**Option B: Manual via Cloudflare Dashboard** (if token permissions insufficient)
+
+1. Go to Workers & Pages → KV → Create Namespace → Name: `REDIRECTS`
+2. Workers & Pages → Create Application → Create Worker → Name: `ringsidesports-redirect`
+3. Paste code from `infra/workers/redirect-worker/src/index.ts`
+4. Bind KV namespace: Variable name `REDIRECTS` → select `REDIRECTS` namespace
+5. Add Route: `ringsidesports.com.au/*`
+6. Upload redirect map: Workers & Pages → KV → REDIRECTS → Bulk Upload → `/tmp/kv-bulk.ndjson`
+7. Deploy and test
+
 **Expected:** Worker deploys without errors. Test redirect returns `HTTP/2 301` with correct `Location` header.
-**Duration:** 3 min
+**Duration:** 3-10 min (CLI) or 10-15 min (Dashboard)
 
 ---
 
 ### Step 6: Switch DNS for Storefront to Cloudflare Pages
 
 ```bash
+# Cloudflare Pages project: ringsidesports
+# Pages subdomain: ringsidesports.pages.dev
+# Project ID: 8af93a4f-0866-4ece-88c9-6028d63cc848
+
 # In Cloudflare Dashboard → ringsidesports.com.au → DNS:
 # Change CNAME record for @ (root) or ringsidesports.com.au
 #   FROM: 45.124.55.87 (legacy server)
-#   TO:   ringsidesports-next.pages.dev (Cloudflare Pages project)
+#   TO:   ringsidesports.pages.dev (Cloudflare Pages project)
 
 # Or via Cloudflare API:
+# First, get the root DNS record ID:
+curl -s "https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/dns_records?type=CNAME&name=ringsidesports.com.au" \
+  -H "Authorization: Bearer ${CF_API_TOKEN}" \
+  | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['result'][0]['id'] if d['result'] else 'NOT_FOUND')"
+
+# Then update it:
 curl -X PUT "https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/dns_records/${ROOT_RECORD_ID}" \
   -H "Authorization: Bearer ${CF_API_TOKEN}" \
   -H "Content-Type: application/json" \
   -d '{
     "type": "CNAME",
     "name": "ringsidesports.com.au",
-    "content": "ringsidesports-next.pages.dev",
+    "content": "ringsidesports.pages.dev",
     "ttl": 60,
     "proxied": true
   }'
@@ -270,12 +351,21 @@ curl -s http://45.124.55.87:7700/health
 
 ## Post-Cutover
 
-- [ ] Remove maintenance mode from legacy WP (or keep as failover backup on alternate port)
-- [ ] Confirm Cloudflare Analytics showing traffic on new origin
+- [ ] Run `./scripts/maintenance-mode.sh off` to disable WP maintenance mode (or keep as failover backup on alternate port)
+- [ ] Confirm Cloudflare Analytics showing traffic on new origin (ringsidesports.pages.dev)
 - [ ] Verify Stripe webhook endpoints receive events from new storefront
 - [ ] Notify stakeholders: "Ringside Sports is live on the new headless platform"
 - [ ] Update DNS TTL back to 3600s (1h) after 24h of stable operation
+- [ ] Enable Cloudflare Page Shield if available on plan
 - [ ] Tag release: `git tag v1.0.0 && git push origin v1.0.0`
+
+## Utility Scripts
+
+| Script | Purpose |
+|--------|---------|
+| `scripts/cutover-check.sh` | Pre-flight health check (8 sections, go/no-go summary) |
+| `scripts/deploy-storefront.sh` | Deploy static export to Cloudflare Pages via wrangler |
+| `scripts/maintenance-mode.sh` | Toggle WP maintenance mode (on/off/status) |
 
 ---
 
