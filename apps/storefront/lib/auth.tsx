@@ -3,7 +3,7 @@
 import * as React from "react";
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "https://api.ringsidesports.com.au";
+  process.env.NEXT_PUBLIC_API_URL || "http://45.124.55.87:9000";
 
 interface Customer {
   id: number;
