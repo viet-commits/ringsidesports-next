@@ -47,7 +47,6 @@ export default function CartPage() {
     applyCoupon,
     removeCoupon,
   } = useCart();
-  const [checkingOut, setCheckingOut] = React.useState(false);
   const [promoInput, setPromoInput] = React.useState("");
 
   const afterpayAmount = total / 4;
@@ -57,38 +56,6 @@ export default function CartPage() {
       applyCoupon(promoInput.trim());
     }
   };
-
-  const handleCheckout = React.useCallback(async () => {
-    setCheckingOut(true);
-    const lineItems = items.map((item) => ({
-      name: item.variant.title,
-      price: item.variant.price,
-      quantity: item.quantity,
-    }));
-    try {
-      const body: Record<string, unknown> = { items: lineItems };
-      if (coupon) {
-        body.discountCode = coupon.code;
-        body.discountAmount = discount;
-      }
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      if (res.ok) {
-        const { url } = await res.json() as { url: string };
-        window.location.href = url;
-      } else {
-        const errData = await res.json() as { message?: string };
-        alert(errData.message || "Checkout unavailable in preview. Will be active when connected to Stripe.");
-        setCheckingOut(false);
-      }
-    } catch {
-      alert("Checkout requires the Cloudflare Pages Function with Stripe keys configured.");
-      setCheckingOut(false);
-    }
-  }, [items, coupon, discount]);
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
@@ -291,9 +258,12 @@ export default function CartPage() {
                 )}
               </div>
 
-              <Button variant="accent" size="lg" className="w-full mt-4" onClick={handleCheckout} disabled={checkingOut}>
-                {checkingOut ? "Redirecting to Stripe..." : "Proceed to Checkout"}
-              </Button>
+              <Link
+                href="/checkout"
+                className="w-full mt-4 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg px-6 py-3 text-center block transition-colors"
+              >
+                Proceed to Checkout
+              </Link>
 
               {/* Afterpay */}
               <div className="mt-4 p-3 rounded-lg bg-[#FFF9EC] border border-[#FFE5B4]">
