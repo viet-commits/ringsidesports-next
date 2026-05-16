@@ -106,7 +106,7 @@ export const products: Product[] = data.catalog
     categories: p.categories.map(mapCat),
     variants: p.variants.map((v) => ({
       ...v,
-      sku: v.supplierVariantSku,
+      sku: v.supplierVariantSku === "_DefaultTitle" ? p.supplierId : v.supplierVariantSku,
       stockStatus: (v.stockStatus === "out_of_stock" ? "out_of_stock" : "in_stock") as "in_stock" | "out_of_stock",
       weight: v.weight ? parseFloat(v.weight) : 0,
     })),

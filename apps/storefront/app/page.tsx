@@ -72,14 +72,10 @@ export default function HomePage() {
     <div>
       {/* Hero Section */}
       <section className="relative min-h-[70vh] overflow-hidden">
-        {/* Video Background */}
-        <video
-          className="absolute inset-0 w-full h-full object-cover"
-          src="https://ringsidesports.com.au/wp-content/uploads/2022/12/Punch-water-bag-banner.mp4"
-          autoPlay
-          loop
-          muted
-          playsInline
+        {/* Hero Background Image */}
+        <div
+          className="absolute inset-0 w-full h-full bg-cover bg-center"
+          style={{ backgroundImage: "url(/hero-bg.jpg)" }}
         />
         {/* Dark overlay */}
         <div className="absolute inset-0 bg-background/70" />
