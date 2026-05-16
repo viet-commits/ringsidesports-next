@@ -70,7 +70,7 @@ export default function CheckoutPage() {
   const initStripe = async () => {
     if (stripe) return;
     const { loadStripe } = await import("@stripe/stripe-js");
-    const s = await loadStripe("pk_live_L9DYFTLlmEnnrIaULa8U9N9R");
+    const s = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_KEY || "pk_live_L9DYFTLlmEnnrIaULa8U9N9R");
     if (!s) { setError("Failed to load payment processor."); return; }
     const els = s.elements();
     const card = els.create("card", {

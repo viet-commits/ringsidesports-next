@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { products, categories } from "@/lib/products";
 import { ProductCard } from "@/components/product/product-card";
+import ProductFilters from "./product-filters";
+import FilteredProductGrid from "./filtered-grid";
 
 const SITE_URL = "https://ringsidesports.com.au";
 
@@ -69,12 +71,15 @@ export default function ProductListingPage() {
 
         {/* Main content */}
         <div className="flex-1 min-w-0">
+          <ProductFilters />
           {/* Server-rendered: all products (for SEO + no-JS fallback) */}
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6" id="product-grid">
             {products.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
+          {/* Client-side: filtered grid (replaces server grid on mount) */}
+          <FilteredProductGrid products={products} />
         </div>
       </div>
     </div>

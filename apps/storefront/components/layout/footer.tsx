@@ -2,7 +2,7 @@ import Link from "next/link";
 import { categories } from "@/lib/products";
 
 const INFO_LINKS = [
-  { label: "About Us", href: "/products" },
+  { label: "About Us", href: "/about" },
   { label: "All Products", href: "/products" },
   { label: "Search", href: "/search" },
   { label: "Cart", href: "/cart" },
