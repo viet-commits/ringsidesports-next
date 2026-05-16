@@ -6,14 +6,13 @@ import { Search, ShoppingCart, Menu, X, User, Package } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { useAuth } from "@/lib/auth";
 import { categories } from "@/lib/products";
+import { MegaMenu } from "@/components/layout/mega-menu";
 
 export function Header() {
   const { itemCount, toggleCart } = useCart();
   const { customer, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [accountOpen, setAccountOpen] = React.useState(false);
-
-  const topCats = categories.slice(0, 6);
 
   // Close dropdown on outside click
   React.useEffect(() => {
@@ -48,18 +47,8 @@ export function Header() {
             />
           </Link>
 
-          {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-1">
-            {topCats.map((cat) => (
-              <Link
-                key={cat.slug}
-                href={`/products?category=${cat.slug}`}
-                className="px-3 py-2 text-sm font-medium text-gray-300 hover:text-white rounded-lg hover:bg-primary-light transition-colors"
-              >
-                {cat.name}
-              </Link>
-            ))}
-          </nav>
+          {/* Desktop Nav — Mega Menu */}
+          <MegaMenu />
 
           {/* Right actions */}
           <div className="flex items-center gap-2">
@@ -142,7 +131,7 @@ export function Header() {
         {mobileMenuOpen && (
           <div className="lg:hidden border-t border-gray-800 py-4">
             <nav className="flex flex-col gap-1">
-              {topCats.map((cat) => (
+              {categories.map((cat) => (
                 <Link
                   key={cat.slug}
                   href={`/products?category=${cat.slug}`}
