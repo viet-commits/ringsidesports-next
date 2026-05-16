@@ -72,11 +72,17 @@ export default function HomePage() {
     <div>
       {/* Hero Section */}
       <section className="relative min-h-[70vh] overflow-hidden">
-        {/* Hero Background Image */}
-        <div
-          className="absolute inset-0 w-full h-full bg-cover bg-center"
-          style={{ backgroundImage: "url(/hero-bg.jpg)" }}
-        />
+        {/* Hero Background Video with image fallback */}
+        <video
+          className="absolute inset-0 w-full h-full object-cover"
+          autoPlay
+          loop
+          muted
+          playsInline
+          poster="/hero-bg.jpg"
+        >
+          <source src="/hero-bg.mp4" type="video/mp4" />
+        </video>
         {/* Dark overlay */}
         <div className="absolute inset-0 bg-background/70" />
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24 lg:py-32 flex items-center min-h-[70vh]">

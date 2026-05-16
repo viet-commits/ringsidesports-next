@@ -258,12 +258,12 @@ export default function CartPage() {
                 )}
               </div>
 
-              <Link
+              <a
                 href="/checkout"
                 className="w-full mt-4 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg px-6 py-3 text-center block transition-colors"
               >
                 Proceed to Checkout
-              </Link>
+              </a>
 
               {/* Afterpay */}
               <div className="mt-4 p-3 rounded-lg bg-[#FFF9EC] border border-[#FFE5B4]">
