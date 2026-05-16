@@ -116,7 +116,29 @@ async function api(
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = React.useState<AuthState>(getStoredAuth);
+  const [state, setState] = React.useState<AuthState>(() => ({ token: null, customer: null, loading: true }));
+
+  // Validate stored token on mount
+  React.useEffect(() => {
+    const stored = getStoredAuth();
+    if (!stored.token) {
+      setState({ token: null, customer: null, loading: false });
+      return;
+    }
+    // Verify token is still valid
+    api("/customers/me", {}, stored.token)
+      .then((data) => {
+        if (data.error) {
+          clearAuth();
+          setState({ token: null, customer: null, loading: false });
+        } else {
+          setState({ token: stored.token, customer: data.customer || data, loading: false });
+        }
+      })
+      .catch(() => {
+        setState({ token: stored.token, customer: stored.customer, loading: false });
+      });
+  }, []);
 
   const login = React.useCallback(async (email: string, password: string) => {
     const data = await api("/auth/login", {
