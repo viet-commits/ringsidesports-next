@@ -14,6 +14,12 @@ export default function AccountLayoutClient({ children }: { children: React.Reac
   const pathname = usePathname();
   const { customer, loading, logout } = useAuth();
 
+  // Allow login and signup pages without authentication
+  const isAuthPage = pathname === "/account/login" || pathname === "/account/signup";
+  if (isAuthPage) {
+    return <>{children}</>;
+  }
+
   // Loading spinner
   if (loading) {
     return (
