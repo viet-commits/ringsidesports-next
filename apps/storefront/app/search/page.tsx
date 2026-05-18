@@ -19,18 +19,65 @@ function SearchContent() {
   const stockFilter = searchParams.get("stock") || "";
   const [mobileFiltersOpen, setMobileFiltersOpen] = React.useState(false);
 
-  // Filter by search query
+  // Filter by search query with relevance scoring
   let results: Product[] = [];
   if (query) {
     const q = query.toLowerCase();
-    results = products.filter(
-      (p) =>
-        p.title.toLowerCase().includes(q) ||
-        p.description.toLowerCase().includes(q) ||
-        p.categories.some((c) => c.toLowerCase().includes(q)) ||
-        p.tags.some((t) => t.toLowerCase().includes(q)) ||
-        p.variants.some((v) => v.sku.toLowerCase().includes(q))
-    );
+    const qWords = q.split(/\s+/).filter((w) => w.length > 0);
+
+    // Score each product by relevance
+    const scored = products
+      .map((p) => {
+        let score = 0;
+        const title = p.title.toLowerCase();
+        const desc = p.description.toLowerCase();
+        const cats = p.categories.map((c) => c.toLowerCase());
+        const tags = p.tags.map((t) => t.toLowerCase());
+        const skus = p.variants.map((v) => v.sku.toLowerCase());
+
+        // Exact title match — highest score
+        if (title === q) score += 100;
+        // Title starts with query
+        else if (title.startsWith(q)) score += 80;
+        // Title contains full query
+        else if (title.includes(q)) score += 60;
+        // Individual word matches in title
+        else {
+          const matchedWords = qWords.filter((w) => title.includes(w)).length;
+          score += matchedWords * 20;
+        }
+
+        // Description matches
+        if (desc.includes(q)) score += 15;
+        else {
+          const descWords = qWords.filter((w) => desc.includes(w)).length;
+          score += descWords * 5;
+        }
+
+        // Category matches
+        if (cats.some((c) => c.includes(q) || q.includes(c))) score += 10;
+
+        // Tag matches
+        if (tags.some((t) => t.includes(q))) score += 8;
+
+        // SKU matches (exact)
+        if (skus.some((s) => s === q)) score += 50;
+        else if (skus.some((s) => s.includes(q))) score += 25;
+
+        // Fuzzy: any word match anywhere in product = base relevance
+        const anyMatch =
+          title.includes(q) ||
+          desc.includes(q) ||
+          cats.some((c) => c.includes(q)) ||
+          tags.some((t) => t.includes(q)) ||
+          skus.some((s) => s.includes(q));
+
+        return { product: p, score: anyMatch ? Math.max(score, 1) : 0 };
+      })
+      .filter(({ score }) => score > 0)
+      .sort((a, b) => b.score - a.score);
+
+    results = scored.map(({ product }) => product);
   }
 
   // Apply additional filters

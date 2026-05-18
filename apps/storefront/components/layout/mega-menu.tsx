@@ -44,32 +44,30 @@ function getCat(slug: string): Category | undefined {
 }
 
 export function MegaMenu() {
-  var _useState = React.useState(null as string | null);
-  var openGroup = _useState[0];
-  var setOpenGroup = _useState[1];
-  var timeoutRef = React.useRef(null as ReturnType<typeof setTimeout> | null);
+  const [openGroup, setOpenGroup] = React.useState<string | null>(null);
+  const timeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  var handleEnter = function (slug: string) {
+  const handleEnter = (slug: string) => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setOpenGroup(slug);
   };
 
-  var handleLeave = function () {
-    timeoutRef.current = setTimeout(function () { setOpenGroup(null); }, 200);
+  const handleLeave = () => {
+    timeoutRef.current = setTimeout(() => setOpenGroup(null), 200);
   };
 
   return (
     <nav className="hidden lg:flex items-center" onMouseLeave={handleLeave}>
-      {MEGA_GROUPS.map(function (group) {
-        var isOpen = openGroup === group.slug;
-        var featuredCats: Category[] = [];
-        for (var _i = 0; _i < group.featured.length; _i++) {
-          var cat = getCat(group.featured[_i] as string);
+      {MEGA_GROUPS.map((group) => {
+        const isOpen = openGroup === group.slug;
+        const featuredCats: Category[] = [];
+        for (const featSlug of group.featured) {
+          const cat = getCat(featSlug);
           if (cat) featuredCats.push(cat);
         }
 
         return (
-          <div key={group.slug} className="relative" onMouseEnter={function () { handleEnter(group.slug); }}>
+          <div key={group.slug} className="relative" onMouseEnter={() => handleEnter(group.slug)}>
             <Link
               href={"/products?category=" + group.slug}
               className={"flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-lg transition-colors " + (isOpen ? "text-white bg-primary-light" : "text-gray-300 hover:text-white hover:bg-primary-light")}
@@ -80,20 +78,18 @@ export function MegaMenu() {
 
             {isOpen && (
               <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 w-[720px] bg-gray-900 border border-gray-700 rounded-xl shadow-2xl z-50"
-                onMouseEnter={function () { handleEnter(group.slug); }}>
+                onMouseEnter={() => handleEnter(group.slug)}>
                 <div className="p-6">
                   <div className="grid grid-cols-4 gap-6">
                     <div className="col-span-3">
                       <div className="grid grid-cols-3 gap-x-6 gap-y-1">
-                        {featuredCats.map(function (cat) {
-                          return (
+                        {featuredCats.map((cat) => (
                             <Link key={cat.slug} href={"/products?category=" + cat.slug}
                               className="text-sm text-gray-300 hover:text-white py-1.5 transition-colors">
                               {cat.name}
                               <span className="text-xs text-gray-500 ml-1">({cat.count})</span>
                             </Link>
-                          );
-                        })}
+                        ))}
                       </div>
                       <div className="mt-4 pt-4 border-t border-gray-700">
                         <Link href={"/products?category=" + group.slug}
