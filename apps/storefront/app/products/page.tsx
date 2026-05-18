@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { products, categories } from "@/lib/products";
 import { ProductCard } from "@/components/product/product-card";
+import FilteredProductGrid from "./filtered-grid";
 
 const SITE_URL = "https://ringsidesports.com.au";
 
@@ -75,6 +76,8 @@ export default function ProductListingPage() {
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
+          {/* Client-rendered: filtered products (replaces #product-grid when filters active) */}
+          <FilteredProductGrid products={products} />
         </div>
       </div>
     </div>
