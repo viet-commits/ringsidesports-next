@@ -69,7 +69,7 @@ export function MegaMenu() {
         return (
           <div key={group.slug} className="relative" onMouseEnter={() => handleEnter(group.slug)}>
             <Link
-              href={"/products?category=" + group.slug}
+              href={"/products?categories=" + group.featured.join(",")}
               className={"flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-lg transition-colors " + (isOpen ? "text-white bg-primary-light" : "text-gray-300 hover:text-white hover:bg-primary-light")}
             >
               {group.name}
@@ -92,7 +92,7 @@ export function MegaMenu() {
                         ))}
                       </div>
                       <div className="mt-4 pt-4 border-t border-gray-700">
-                        <Link href={"/products?category=" + group.slug}
+                        <Link href={"/products?categories=" + group.featured.join(",")}
                           className="text-sm font-semibold text-red-400 hover:text-red-300 transition-colors">
                           Shop All {group.name} &rarr;
                         </Link>
@@ -100,7 +100,7 @@ export function MegaMenu() {
                     </div>
                     <div className="col-span-1">
                       {featuredCats.length > 0 && featuredCats[0] && featuredCats[0].image && (
-                        <Link href={"/products?category=" + group.slug}>
+                        <Link href={"/products?categories=" + group.featured.join(",")}>
                           <img src={featuredCats[0].image} alt={group.name}
                             className="w-full h-40 object-cover rounded-lg" />
                         </Link>

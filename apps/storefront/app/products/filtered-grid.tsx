@@ -33,6 +33,7 @@ export default function FilteredProductGrid({ products }: Props) {
   if (!mounted) return null;
 
   const activeCategory = params.category || "";
+  const activeCategories = (params.categories || "").split(",").filter(Boolean);
   const activeSort = params.sort || "default";
   const stockFilter = params.stock || "";
   const minPrice = params.minPrice || "";
@@ -40,9 +41,13 @@ export default function FilteredProductGrid({ products }: Props) {
 
   let filtered = [...products];
 
-  if (activeCategory) {
+  // Support both single ?category= and multi ?categories=a,b,c
+  const catFilters = activeCategory ? [activeCategory] : activeCategories;
+  if (catFilters.length > 0) {
     filtered = filtered.filter((p) =>
-      p.categories.some((c) => slugify(c) === activeCategory.toLowerCase())
+      catFilters.some((cat) =>
+        p.categories.some((c) => slugify(c) === cat.toLowerCase())
+      )
     );
   }
   if (minPrice) filtered = filtered.filter((p) => p.price >= parseInt(minPrice, 10));
